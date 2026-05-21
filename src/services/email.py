@@ -155,8 +155,9 @@ class EmailManager:
         if not self.config.enabled or not subscribers:
             return
 
+        safe_summary_md = summary_md.replace("<", "&lt;")
         html_content = (
-            markdown.markdown(summary_md, extensions=["toc"])
+            markdown.markdown(safe_summary_md)
             if markdown
             else f"<pre>{html.escape(summary_md)}</pre>"
         )
