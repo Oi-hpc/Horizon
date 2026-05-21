@@ -155,11 +155,10 @@ class EmailManager:
         if not self.config.enabled or not subscribers:
             return
 
-        safe_summary = html.escape(summary_md)
         html_content = (
-            markdown.markdown(safe_summary)
+            markdown.markdown(summary_md, extensions=["toc"])
             if markdown
-            else f"<pre>{safe_summary}</pre>"
+            else f"<pre>{html.escape(summary_md)}</pre>"
         )
 
         html_body = f"""
