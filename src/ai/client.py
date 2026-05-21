@@ -100,7 +100,18 @@ class AnthropicClient(AIClient):
                 input_tokens=getattr(usage, "input_tokens", 0),
                 output_tokens=getattr(usage, "output_tokens", 0),
             )
-        return message.content[0].text
+        text_parts = [
+            block.text for block in message.content if getattr(block, "type", None) == "text"
+        ]
+        if text_parts:
+            return "\n".join(text_parts)
+
+        # Some Anthropic-compatible gateways can return non-text blocks first.
+        for block in message.content:
+            text = getattr(block, "text", None)
+            if text:
+                return text
+        raise ValueError("No text content returned by Anthropic-compatible API")
 
 
 class OpenAIClient(AIClient):

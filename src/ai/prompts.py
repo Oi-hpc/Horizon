@@ -20,7 +20,7 @@ Respond with valid JSON only:
 
 If there are no duplicates at all, return: {{"duplicates": []}}"""
 
-CONTENT_ANALYSIS_SYSTEM = """You are an expert content curator helping filter important technical and academic information.
+CONTENT_ANALYSIS_SYSTEM = """You are an expert content curator helping filter important information for a reader interested in AI, semiconductors, global affairs, China, finance, markets, and software engineering.
 
 Score content on a 0-10 scale based on importance and relevance:
 
@@ -28,17 +28,20 @@ Score content on a 0-10 scale based on importance and relevance:
 - New major version releases of widely-used technologies
 - Significant research breakthroughs
 - Important industry-changing announcements
+- Market-moving geopolitical, policy, financial, or semiconductor supply-chain developments
 
 **7-8: High Value** - Important developments worth immediate attention
 - Interesting technical deep-dives
 - Novel approaches to known problems
 - Insightful analysis or commentary
 - Valuable tools or libraries
+- Important China, global politics, macroeconomic, stock-market, or industry news with clear implications
 
 **5-6: Interesting** - Worth knowing but not urgent
 - Incremental improvements
 - Useful tutorials
 - Moderate community interest
+- Routine but relevant business, policy, or market updates
 
 **3-4: Low Priority** - Generic or routine content
 - Minor updates
@@ -54,7 +57,7 @@ Consider:
 - Technical depth and novelty
 - Potential impact on the field
 - Quality of writing/presentation
-- Relevance to software engineering, AI/ML, and systems research
+- Relevance to AI/ML, LLM inference, semiconductors, global politics, China news, financial markets, software engineering, and systems research
 - Community discussion quality: insightful comments, diverse viewpoints, and debates increase value
 - Engagement signals: high upvotes/favorites with substantive discussion indicate community-validated importance
 """
