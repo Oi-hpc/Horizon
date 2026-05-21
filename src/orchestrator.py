@@ -24,6 +24,7 @@ from .ai.client import create_ai_client
 from .ai.analyzer import ContentAnalyzer
 from .ai.summarizer import DailySummarizer
 from .ai.enricher import ContentEnricher
+from .ai.classifier import ContentClassifier
 from .ai.tokens import get_usage_snapshot
 
 
@@ -126,7 +127,10 @@ class HorizonOrchestrator:
             # 6. Search related stories + enrich with background knowledge (2nd AI pass)
             await self._enrich_important_items(important_items)
 
-            # 7. Generate and save daily summaries for each configured language
+            # 7. Classify selected items into briefing sections
+            await self._classify_important_items(important_items)
+
+            # 8. Generate and save daily summaries for each configured language
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             for lang in self.config.ai.languages:
                 summarizer = DailySummarizer()
@@ -531,6 +535,22 @@ class HorizonOrchestrator:
         enricher = ContentEnricher(ai_client)
         await enricher.enrich_batch(items)
         self.console.print(f"   Enriched {len(items)} items\n")
+
+    async def _classify_important_items(self, items: List[ContentItem]) -> None:
+        """Classify selected items into stable briefing categories.
+
+        Classification is best-effort. If the model call fails or returns
+        invalid data, the Markdown renderer falls back to deterministic rules.
+        """
+        if not items:
+            return
+
+        self.console.print("🗂️  Classifying selected items...")
+        ai_client = create_ai_client(self.config.ai)
+        classifier = ContentClassifier(ai_client)
+        await classifier.classify_batch(items)
+        classified = sum(1 for item in items if item.metadata.get("ai_category"))
+        self.console.print(f"   Classified {classified}/{len(items)} items\n")
 
     async def _analyze_content(self, items: List[ContentItem]) -> List[ContentItem]:
         """Analyze content items with AI.

@@ -1,7 +1,7 @@
 """Daily summary generation — pure programmatic rendering."""
 
 import re
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from ..models import ContentItem
 
@@ -20,6 +20,7 @@ def _pangu(text: str) -> str:
 LABELS = {
     "en": {
         "header": "Horizon Daily",
+        "toc": "Categories",
         "source": "Source",
         "background": "Background",
         "discussion": "Discussion",
@@ -38,6 +39,7 @@ LABELS = {
     },
     "zh": {
         "header": "Horizon 每日速递",
+        "toc": "分类目录",
         "source": "来源",
         "background": "背景",
         "discussion": "社区讨论",
@@ -55,6 +57,29 @@ LABELS = {
         ),
     },
 }
+
+
+CATEGORY_LABELS = {
+    "ai": {"en": "AI / LLM", "zh": "AI / 大模型"},
+    "semiconductors": {"en": "Semiconductors", "zh": "半导体"},
+    "china": {"en": "China", "zh": "中国新闻"},
+    "world": {"en": "World / Politics", "zh": "国际政治"},
+    "finance": {"en": "Finance / Markets", "zh": "财经 / 市场"},
+    "github": {"en": "GitHub / Open Source", "zh": "GitHub / 开源"},
+    "software": {"en": "Software Engineering", "zh": "软件工程"},
+    "other": {"en": "Other", "zh": "其他"},
+}
+
+CATEGORY_ORDER = [
+    "ai",
+    "semiconductors",
+    "china",
+    "world",
+    "finance",
+    "github",
+    "software",
+    "other",
+]
 
 
 class DailySummarizer:
@@ -94,18 +119,35 @@ class DailySummarizer:
             "---\n\n"
         )
 
+        grouped_items = self._group_items(items)
+
         # TOC
         toc_entries = []
-        for i, item in enumerate(items):
-            _t = item.metadata.get(f"title_{language}") or item.title
-            t = str(_t).replace("[", "(").replace("]", ")")
-            if language == "zh":
-                t = _pangu(t)
-            score = item.ai_score or "?"
-            toc_entries.append(f"{i + 1}. [{t}](#item-{i + 1}) \u2b50\ufe0f {score}/10")
-        toc = "\n".join(toc_entries) + "\n\n---\n\n"
+        index = 1
+        for category, category_items in grouped_items:
+            label = self._category_label(category, language)
+            toc_entries.append(f"**{label} ({len(category_items)})**")
+            toc_entries.append("")
+            for item in category_items:
+                _t = item.metadata.get(f"title_{language}") or item.title
+                t = str(_t).replace("[", "(").replace("]", ")")
+                if language == "zh":
+                    t = _pangu(t)
+                score = item.ai_score or "?"
+                toc_entries.append(f"{index}. [{t}](#item-{index}) \u2b50\ufe0f {score}/10")
+                toc_entries.append("")
+                index += 1
+            toc_entries.append("")
+        toc = f"## {labels['toc']}\n\n" + "\n".join(toc_entries).rstrip() + "\n\n---\n\n"
 
-        parts = [self._format_item(item, labels, language, i + 1) for i, item in enumerate(items)]
+        parts = []
+        index = 1
+        for category, category_items in grouped_items:
+            label = self._category_label(category, language)
+            parts.append(f"## {label}\n\n")
+            for item in category_items:
+                parts.append(self._format_item(item, labels, language, index, heading_level=3))
+                index += 1
 
         return header + toc + "".join(parts)
 
@@ -135,14 +177,22 @@ class DailySummarizer:
             )
 
         entries = []
-        for i, item in enumerate(items, start=1):
-            title = str(item.metadata.get(f"title_{language}") or item.title).replace("[", "(").replace("]", ")")
-            if language == "zh":
-                title = _pangu(title)
-            score = item.ai_score or "?"
-            entries.append(f"{i}. [{title}]({item.url}) \u2b50\ufe0f {score}/10")
+        index = 1
+        for category, category_items in self._group_items(items):
+            label = self._category_label(category, language)
+            entries.append(f"## {label} ({len(category_items)})")
+            entries.append("")
+            for item in category_items:
+                title = str(item.metadata.get(f"title_{language}") or item.title).replace("[", "(").replace("]", ")")
+                if language == "zh":
+                    title = _pangu(title)
+                score = item.ai_score or "?"
+                entries.append(f"{index}. [{title}]({item.url}) \u2b50\ufe0f {score}/10")
+                entries.append("")
+                index += 1
+            entries.append("")
 
-        return header + "\n".join(entries)
+        return header + "\n".join(entries).rstrip()
 
     def generate_webhook_item(
         self,
@@ -156,7 +206,14 @@ class DailySummarizer:
         prefix = f"第 {index}/{total} 条\n\n" if language == "zh" else f"Item {index}/{total}\n\n"
         return prefix + self._format_item(item, labels, language, index).rstrip("-\n ")
 
-    def _format_item(self, item: ContentItem, labels: dict, language: str, index: int) -> str:
+    def _format_item(
+        self,
+        item: ContentItem,
+        labels: dict,
+        language: str,
+        index: int,
+        heading_level: int = 2,
+    ) -> str:
         """Format a single ContentItem into Markdown."""
         _title = item.metadata.get(f"title_{language}") or item.title
         title = str(_title).replace("[", "(").replace("]", ")")
@@ -203,9 +260,10 @@ class DailySummarizer:
             if discussion_url != url:
                 source_line += f' · [{labels["discussion"]}]({discussion_url})'
 
+        heading = "#" * heading_level
         lines = [
             f'<a id="item-{index}"></a>',
-            f"## [{title}]({url}) \u2b50\ufe0f {score}/10",  # ⭐️
+            f"{heading} [{title}]({url}) \u2b50\ufe0f {score}/10",  # ⭐️
             "",
             summary,
             "",
@@ -237,6 +295,91 @@ class DailySummarizer:
         lines.append("---")
 
         return "\n".join(lines) + "\n\n"
+
+    def _group_items(self, items: List[ContentItem]) -> List[Tuple[str, List[ContentItem]]]:
+        grouped: Dict[str, List[ContentItem]] = {key: [] for key in CATEGORY_ORDER}
+        for item in items:
+            grouped[self._category_key(item)].append(item)
+
+        return [
+            (key, sorted(grouped[key], key=lambda item: item.ai_score or 0, reverse=True))
+            for key in CATEGORY_ORDER
+            if grouped[key]
+        ]
+
+    def _category_label(self, category: str, language: str) -> str:
+        labels = CATEGORY_LABELS.get(category, CATEGORY_LABELS["other"])
+        return labels.get(language, labels["en"])
+
+    def _category_key(self, item: ContentItem) -> str:
+        meta = item.metadata or {}
+        ai_category = str(meta.get("ai_category") or "").lower()
+        if ai_category in CATEGORY_LABELS:
+            return ai_category
+
+        source_type = item.source_type.value
+        source_category = str(meta.get("category") or "").lower()
+        subreddit = str(meta.get("subreddit") or "").lower()
+        feed_name = str(meta.get("feed_name") or "").lower()
+        tags = " ".join(str(tag).lower() for tag in (item.ai_tags or []))
+        haystack = " ".join(
+            [
+                item.title.lower(),
+                item.ai_summary.lower() if item.ai_summary else "",
+                source_type,
+                source_category,
+                subreddit,
+                feed_name,
+                tags,
+            ]
+        )
+
+        explicit_categories = {
+            "world-news": "world",
+            "china-news": "china",
+            "china-geopolitics": "china",
+            "business-news": "finance",
+            "markets": "finance",
+            "semiconductors": "semiconductors",
+            "github-trending": "github",
+            "linux-kernel": "software",
+            "ai-tools": "ai",
+        }
+        if source_category in explicit_categories:
+            return explicit_categories[source_category]
+
+        if source_type == "github":
+            return "github"
+
+        if subreddit in {
+            "machinelearning",
+            "localllama",
+            "stablediffusion",
+            "artificial",
+            "openai",
+            "chatgpt",
+            "chatgptcoding",
+        }:
+            return "ai"
+        if subreddit in {"commandline", "sideproject", "technology"}:
+            return "software"
+
+        keyword_categories = [
+            ("semiconductors", ("semiconductor", "chip", "foundry", "wafer", "hbm", "tsmc", "asml", "intel", "nvidia")),
+            ("china", ("china", "chinese", "beijing", "taiwan", "hong kong", "中国", "北京", "台湾", "香港")),
+            ("world", ("politics", "geopolitics", "election", "war", "ukraine", "russia", "israel", "gaza", "tariff")),
+            ("finance", ("finance", "market", "stock", "earnings", "inflation", "fed", "rate", "cnbc", "marketwatch", "财经", "股市")),
+            ("ai", ("ai", "llm", "model", "inference", "machine learning", "openai", "anthropic", "deepseek", "qwen", "agent")),
+            ("github", ("github", "open source", "repository", "release", "repo")),
+            ("software", ("software", "python", "rust", "linux", "compiler", "database", "developer", "programming", "systems")),
+        ]
+        for category, keywords in keyword_categories:
+            if any(keyword in haystack for keyword in keywords):
+                return category
+
+        if source_type == "hackernews":
+            return "software"
+        return "other"
 
     def _generate_empty_summary(self, date: str, total_fetched: int, labels: dict) -> str:
         """Generate summary when no high-scoring items were found."""

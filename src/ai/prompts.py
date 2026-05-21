@@ -84,6 +84,38 @@ Respond with valid JSON only:
   "tags": ["<tag1>", "<tag2>", ...]
 }}"""
 
+NEWS_CLASSIFICATION_SYSTEM = """You classify already-selected news items into one stable category for a daily briefing.
+
+Allowed categories:
+- ai: AI, LLMs, agents, machine learning, AI infrastructure, model releases, inference, evals
+- semiconductors: chips, fabs, foundries, GPUs, accelerators, HBM, EDA, lithography, semiconductor supply chain
+- china: China domestic news, Chinese policy, Chinese companies, Taiwan/Hong Kong when China is central
+- world: international politics, diplomacy, military conflict, elections, geopolitics, regulation not primarily about China
+- finance: macroeconomics, financial markets, stocks, earnings, rates, business news, commodities
+- github: GitHub projects, open-source releases, repositories, developer tools where the project/repo itself is the news
+- software: software engineering, programming languages, systems, databases, infrastructure, security, non-AI developer technology
+- other: important items that do not fit the above
+
+Rules:
+- Return exactly one allowed category per item.
+- Classify by the actual topic, not merely by the source. For example, a CNBC article about HBM shortages is semiconductors, not finance.
+- Prefer specific categories over broad ones: semiconductors before finance; china before world when China is central; ai before software when AI/LLM is central.
+- Use source/category/tags only to disambiguate ambiguous titles.
+- Respond with valid JSON only."""
+
+NEWS_CLASSIFICATION_USER = """Classify each news item into exactly one allowed category.
+
+Items:
+{items}
+
+Respond with valid JSON only:
+{{
+  "items": [
+    {{"index": 1, "category": "ai"}},
+    {{"index": 2, "category": "finance"}}
+  ]
+}}"""
+
 CONCEPT_EXTRACTION_SYSTEM = """You identify technical concepts in news that a reader might not know.
 Given a news item, return 1-3 search queries for concepts that need explanation.
 Focus on: specific technologies, protocols, algorithms, tools, or projects that are not widely known.
