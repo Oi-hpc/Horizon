@@ -5,6 +5,7 @@ import html
 import imaplib
 import logging
 import os
+import re
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -19,6 +20,50 @@ except ImportError:
 from ..models import EmailConfig
 
 logger = logging.getLogger(__name__)
+
+
+_ITEM_ANCHOR_RE = re.compile(r'<a id="(item-\d+)"></a>')
+_DETAILS_RE = re.compile(
+    r"<details><summary>(?P<title>.*?)</summary>\s*"
+    r"<ul>\s*(?P<items>.*?)\s*</ul>\s*</details>",
+    re.DOTALL,
+)
+_DETAILS_LINK_RE = re.compile(
+    r'<li><a href="(?P<url>[^"]+)">(?P<title>.*?)</a></li>',
+    re.DOTALL,
+)
+
+
+def _details_to_markdown(match: re.Match) -> str:
+    """Convert renderer-generated details blocks to email-safe Markdown."""
+    title = html.unescape(match.group("title")).strip()
+    lines = []
+    for link in _DETAILS_LINK_RE.finditer(match.group("items")):
+        link_title = html.unescape(link.group("title")).strip()
+        url = link.group("url").strip()
+        if link_title and url:
+            lines.append(f"- [{link_title}]({url})")
+    if not lines:
+        return ""
+    return f"**{title}**\n\n" + "\n".join(lines)
+
+
+def _prepare_markdown_for_email(summary_md: str) -> str:
+    """Escape arbitrary raw HTML while keeping Horizon item anchors usable."""
+    prepared = _DETAILS_RE.sub(_details_to_markdown, summary_md)
+    anchors: dict[str, str] = {}
+
+    def protect_anchor(match: re.Match) -> str:
+        token = f"@@HORIZON_EMAIL_ANCHOR_{len(anchors)}@@"
+        anchor_id = match.group(1)
+        anchors[token] = f'<a id="{anchor_id}" name="{anchor_id}"></a>'
+        return token
+
+    prepared = _ITEM_ANCHOR_RE.sub(protect_anchor, prepared)
+    prepared = prepared.replace("<", "&lt;")
+    for token, anchor in anchors.items():
+        prepared = prepared.replace(token, anchor)
+    return prepared
 
 
 class EmailManager:
@@ -155,7 +200,7 @@ class EmailManager:
         if not self.config.enabled or not subscribers:
             return
 
-        safe_summary_md = summary_md.replace("<", "&lt;")
+        safe_summary_md = _prepare_markdown_for_email(summary_md)
         html_content = (
             markdown.markdown(safe_summary_md)
             if markdown

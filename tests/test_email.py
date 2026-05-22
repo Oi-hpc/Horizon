@@ -97,6 +97,52 @@ def test_send_daily_summary_escapes_raw_html(monkeypatch):
     assert "&lt;img src=x" in html_body
 
 
+def test_send_daily_summary_preserves_item_anchors(monkeypatch):
+    monkeypatch.setenv("EMAIL_PASSWORD", "secret")
+    monkeypatch.setattr("src.services.email.smtplib.SMTP_SSL", FakeSMTP)
+    FakeSMTP.instances = []
+
+    manager = EmailManager(_email_config())
+
+    manager.send_daily_summary(
+        "1. [First](#item-1)\n\n<a id=\"item-1\"></a>\n### First",
+        "Daily",
+        ["user@example.com"],
+    )
+
+    html_part = FakeSMTP.instances[0].messages[0].get_payload()[1]
+    html_body = html_part.get_payload(decode=True).decode()
+    assert 'href="#item-1"' in html_body
+    assert 'id="item-1"' in html_body
+    assert 'name="item-1"' in html_body
+    assert "&lt;a id=" not in html_body
+
+
+def test_send_daily_summary_converts_reference_details(monkeypatch):
+    monkeypatch.setenv("EMAIL_PASSWORD", "secret")
+    monkeypatch.setattr("src.services.email.smtplib.SMTP_SSL", FakeSMTP)
+    FakeSMTP.instances = []
+
+    manager = EmailManager(_email_config())
+
+    manager.send_daily_summary(
+        (
+            "<details><summary>参考链接</summary>\n<ul>\n"
+            '<li><a href="https://example.com/a">Example A</a></li>\n'
+            "</ul>\n</details>"
+        ),
+        "Daily",
+        ["user@example.com"],
+    )
+
+    html_part = FakeSMTP.instances[0].messages[0].get_payload()[1]
+    html_body = html_part.get_payload(decode=True).decode()
+    assert "<details>" not in html_body
+    assert "<summary>" not in html_body
+    assert "<strong>参考链接</strong>" in html_body
+    assert '<a href="https://example.com/a">Example A</a>' in html_body
+
+
 def test_check_subscriptions_skips_imap_when_disabled(monkeypatch):
     monkeypatch.setenv("EMAIL_PASSWORD", "secret")
     monkeypatch.setattr("src.services.email.imaplib.IMAP4_SSL", FakeIMAP)
