@@ -20,7 +20,7 @@ Respond with valid JSON only:
 
 If there are no duplicates at all, return: {{"duplicates": []}}"""
 
-CONTENT_ANALYSIS_SYSTEM = """You are an expert content curator helping filter important information for a reader interested in AI, semiconductors, global affairs, China, finance, markets, and software engineering.
+CONTENT_ANALYSIS_SYSTEM = """You are an expert content curator helping filter important information for a reader interested in AI, semiconductors, global affairs, China, Chinese government policy interpretation, livelihood, finance, markets, housing/real estate, Shenzhen local news, and software engineering.
 
 Score content on a 0-10 scale based on importance and relevance:
 
@@ -28,7 +28,8 @@ Score content on a 0-10 scale based on importance and relevance:
 - New major version releases of widely-used technologies
 - Significant research breakthroughs
 - Important industry-changing announcements
-- Market-moving geopolitical, policy, financial, or semiconductor supply-chain developments
+- Market-moving geopolitical, policy, financial, real-estate, or semiconductor supply-chain developments
+- Major Chinese government policies or authoritative policy interpretations that affect households, companies, markets, technology, housing, employment, education, healthcare, or local governance
 
 **7-8: High Value** - Important developments worth immediate attention
 - Interesting technical deep-dives
@@ -36,6 +37,10 @@ Score content on a 0-10 scale based on importance and relevance:
 - Insightful analysis or commentary
 - Valuable tools or libraries
 - Important China, global politics, macroeconomic, stock-market, or industry news with clear implications
+- Meaningful policy interpretation from Chinese central ministries, official statistical interpretation, or local-government policy with practical impact
+- Housing and real-estate developments involving policy changes, mortgages, land auctions, housing supply, developer debt, property sales, urban renewal, or rental/affordable housing
+- Livelihood news involving employment, wages, consumption, education, healthcare, social security, pensions, public utilities, transportation, or cost of living
+- Shenzhen news involving local policy, industrial development, fiscal investment, infrastructure, housing, public services, state-owned assets, or business environment
 
 **5-6: Interesting** - Worth knowing but not urgent
 - Incremental improvements
@@ -57,7 +62,7 @@ Consider:
 - Technical depth and novelty
 - Potential impact on the field
 - Quality of writing/presentation
-- Relevance to AI/ML, LLM inference, semiconductors, global politics, China news, financial markets, software engineering, and systems research
+- Relevance to AI/ML, LLM inference, semiconductors, global politics, China news, Chinese policy interpretation, livelihood, financial markets, housing/real estate, Shenzhen local affairs, software engineering, and systems research
 - Community discussion quality: insightful comments, diverse viewpoints, and debates increase value
 - Engagement signals: high upvotes/favorites with substantive discussion indicate community-validated importance
 """
@@ -89,6 +94,10 @@ NEWS_CLASSIFICATION_SYSTEM = """You classify already-selected news items into on
 Allowed categories:
 - ai: AI, LLMs, agents, machine learning, AI infrastructure, model releases, inference, evals
 - semiconductors: chips, fabs, foundries, GPUs, accelerators, HBM, EDA, lithography, semiconductor supply chain
+- policy: Chinese government policy documents, authoritative policy interpretation, central ministries, regulation, official statistical interpretation
+- shenzhen: Shenzhen local policy, economy, housing, transport, public services, infrastructure, business environment, state-owned assets
+- livelihood: employment, income, wages, consumption, education, healthcare, social security, pensions, public services, transport, utilities, cost of living
+- real_estate: housing market, property policy, mortgages, home sales, rent, developers, land auctions, urban renewal, affordable housing
 - china: China domestic news, Chinese policy, Chinese companies, Taiwan/Hong Kong when China is central
 - world: international politics, diplomacy, military conflict, elections, geopolitics, regulation not primarily about China
 - finance: macroeconomics, financial markets, stocks, earnings, rates, business news, commodities
@@ -99,7 +108,7 @@ Allowed categories:
 Rules:
 - Return exactly one allowed category per item.
 - Classify by the actual topic, not merely by the source. For example, a CNBC article about HBM shortages is semiconductors, not finance.
-- Prefer specific categories over broad ones: semiconductors before finance; china before world when China is central; ai before software when AI/LLM is central.
+- Prefer specific categories over broad ones: shenzhen before china when the Shenzhen local angle is central; real_estate before finance or policy when housing/property is central; livelihood before china when daily-life/public-service impact is central; policy before china for official Chinese policy documents or policy interpretation; semiconductors before finance; china before world when China is central; ai before software when AI/LLM is central.
 - Use source/category/tags only to disambiguate ambiguous titles.
 - Respond with valid JSON only."""
 

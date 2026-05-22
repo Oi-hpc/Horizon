@@ -61,10 +61,16 @@
     },
     "rss": [
       {
-        "name": "Anthropic Research",
-        "url": "https://www.anthropic.com/research/rss",
+        "name": "Anthropic News",
+        "url": "https://rsshub.rssforever.com/anthropic/news",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
+      },
+      {
+        "name": "Anthropic Engineering",
+        "url": "https://rsshub.rssforever.com/anthropic/engineering",
+        "enabled": true,
+        "category": "ai-tools"
       },
       {
         "name": "量子位",
@@ -140,9 +146,9 @@
       },
       {
         "name": "The Batch",
-        "url": "https://www.deeplearning.ai/the-batch/feed/",
+        "url": "https://rsshub.rssforever.com/deeplearning/the-batch",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "The Gradient",
@@ -158,9 +164,9 @@
       },
       {
         "name": "Ars Technica AI",
-        "url": "http://feeds.arstechnica.com/arstechnica/artificial-intelligence",
+        "url": "https://arstechnica.com/ai/feed/",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "AI Weekly",
@@ -177,12 +183,6 @@
       {
         "name": "GitHub Blog",
         "url": "https://github.blog/feed/",
-        "enabled": true,
-        "category": ""
-      },
-      {
-        "name": "GitHub Trending - Daily",
-        "url": "https://mshibanern.github.io/GitHubTrendingRSS/daily/all.xml",
         "enabled": true,
         "category": ""
       },
@@ -237,7 +237,7 @@
       {
         "name": "LWN.net",
         "url": "https://lwn.net/headlines/full_text?key=${LWN_KEY}",
-        "enabled": true,
+        "enabled": false,
         "category": "linux-kernel"
       },
       {
@@ -305,6 +305,84 @@
         "url": "https://semiwiki.com/feed/",
         "enabled": true,
         "category": "semiconductors"
+      },
+      {
+        "name": "国家统计局 - 数据发布",
+        "url": "https://www.stats.gov.cn/sj/zxfb/rss.xml",
+        "enabled": true,
+        "category": "macro-livelihood"
+      },
+      {
+        "name": "国家统计局 - 数据解读",
+        "url": "https://www.stats.gov.cn/sj/sjjd/rss.xml",
+        "enabled": true,
+        "category": "policy-interpretation"
+      },
+      {
+        "name": "中国政府网 - 政策文件库",
+        "url": "https://rsshub.rssforever.com/gov/zhengce/zhengceku/bmwj",
+        "enabled": true,
+        "category": "government-policy"
+      },
+      {
+        "name": "教育部 - 政策解读",
+        "url": "https://rsshub.rssforever.com/gov/moe/policy_anal",
+        "enabled": true,
+        "category": "policy-interpretation"
+      },
+      {
+        "name": "财联社 - 金融",
+        "url": "https://rsshub.rssforever.com/cls/depth/1032",
+        "enabled": true,
+        "category": "finance"
+      },
+      {
+        "name": "财联社 - 地产",
+        "url": "https://rsshub.rssforever.com/cls/depth/1006",
+        "enabled": true,
+        "category": "real-estate"
+      },
+      {
+        "name": "东方财富网 - 房地产搜索",
+        "url": "https://rsshub.rssforever.com/eastmoney/search/%E6%88%BF%E5%9C%B0%E4%BA%A7",
+        "enabled": true,
+        "category": "real-estate"
+      },
+      {
+        "name": "深圳发改委 - 工作动态",
+        "url": "http://fgw.sz.gov.cn/rss_gzdt/gzdtrss_15703.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳发改委 - 经济形势",
+        "url": "http://fgw.sz.gov.cn/rss_jjxs/jjxsrss_15706.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳发改委 - 重大项目",
+        "url": "http://fgw.sz.gov.cn/rss_zdxm/zdxmrss_15709.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳市住房和建设局 - 通知公告",
+        "url": "https://rsshub.rssforever.com/gov/shenzhen/zjj/xxgk/tzgg",
+        "enabled": true,
+        "category": "shenzhen-housing"
+      },
+      {
+        "name": "深圳市国资委 - 国资视点",
+        "url": "http://gzw.sz.gov.cn/rss_gzdt1/index.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳市国资委 - 通知公告",
+        "url": "http://gzw.sz.gov.cn/rss_ttgg1/index.xml",
+        "enabled": true,
+        "category": "shenzhen"
       }
     ],
     "reddit": {

@@ -115,6 +115,9 @@ def test_send_daily_summary_preserves_item_anchors(monkeypatch):
     assert 'href="#item-1"' in html_body
     assert 'id="item-1"' in html_body
     assert 'name="item-1"' in html_body
+    assert '<p><a id="item-1" name="item-1"></a></p>' not in html_body
+    assert '<h3><a id="item-1" name="item-1"' in html_body
+    assert "&#8203;" in html_body
     assert "&lt;a id=" not in html_body
 
 

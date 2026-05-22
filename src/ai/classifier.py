@@ -13,6 +13,10 @@ from ..models import ContentItem
 ALLOWED_CATEGORIES = {
     "ai",
     "semiconductors",
+    "policy",
+    "shenzhen",
+    "livelihood",
+    "real_estate",
     "china",
     "world",
     "finance",

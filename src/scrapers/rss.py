@@ -16,6 +16,11 @@ from ..models import ContentItem, SourceType, RSSSourceConfig
 
 logger = logging.getLogger(__name__)
 
+RSS_REQUEST_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; HorizonRSS/1.0)",
+    "Accept": "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+}
+
 
 class RSSScraper(BaseScraper):
     """Scraper for RSS/Atom feeds."""
@@ -66,14 +71,26 @@ class RSSScraper(BaseScraper):
 
         try:
             # Expand environment variables in URL (e.g. ${LWN_TOKEN})
+            missing_env_vars = []
             feed_url = re.sub(
                 r"\$\{(\w+)\}",
-                lambda m: os.environ.get(m.group(1), m.group(0)).strip(),
+                lambda m: self._expand_env_var(m, missing_env_vars),
                 str(source.url),
             )
+            if missing_env_vars:
+                logger.warning(
+                    "Skipping RSS feed %s: missing environment variable(s): %s",
+                    source.name,
+                    ", ".join(missing_env_vars),
+                )
+                return []
 
             # Fetch feed content
-            response = await self.client.get(feed_url, follow_redirects=True)
+            response = await self.client.get(
+                feed_url,
+                follow_redirects=True,
+                headers=RSS_REQUEST_HEADERS,
+            )
             response.raise_for_status()
 
             # Parse feed
@@ -117,6 +134,15 @@ class RSSScraper(BaseScraper):
             logger.warning("Error parsing RSS feed %s: %s", source.name, e)
 
         return items
+
+    @staticmethod
+    def _expand_env_var(match: re.Match[str], missing_env_vars: List[str]) -> str:
+        name = match.group(1)
+        value = os.environ.get(name)
+        if value is None:
+            missing_env_vars.append(name)
+            return match.group(0)
+        return value.strip()
 
     def _parse_date(self, entry: dict) -> datetime:
         """Parse publication date from feed entry.

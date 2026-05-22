@@ -32,6 +32,27 @@ _DETAILS_LINK_RE = re.compile(
     r'<li><a href="(?P<url>[^"]+)">(?P<title>.*?)</a></li>',
     re.DOTALL,
 )
+_EMAIL_ANCHOR_PARAGRAPH_RE = re.compile(
+    r'<p>\s*<a id="(?P<anchor_id>item-\d+)" '
+    r'name="(?P=anchor_id)"></a>\s*</p>\s*'
+    r'(?P<heading><h[1-6][^>]*>)',
+    re.IGNORECASE,
+)
+_EMAIL_ANCHOR_INLINE_RE = re.compile(
+    r'<a id="(?P<anchor_id>item-\d+)" '
+    r'name="(?P=anchor_id)"></a>\s*'
+    r'(?P<heading><h[1-6][^>]*>)',
+    re.IGNORECASE,
+)
+
+
+def _email_anchor_target(anchor_id: str) -> str:
+    """Render a non-empty item anchor target for stricter email clients."""
+    return (
+        f'<a id="{anchor_id}" name="{anchor_id}" '
+        'style="display:block;height:1px;line-height:1px;font-size:1px;'
+        'overflow:hidden;color:transparent;text-decoration:none;">&#8203;</a>'
+    )
 
 
 def _details_to_markdown(match: re.Match) -> str:
@@ -64,6 +85,23 @@ def _prepare_markdown_for_email(summary_md: str) -> str:
     for token, anchor in anchors.items():
         prepared = prepared.replace(token, anchor)
     return prepared
+
+
+def _stabilize_email_anchors(html_content: str) -> str:
+    """Move item anchors into headings and make them non-empty.
+
+    Some desktop email clients ignore empty anchors, especially when Markdown
+    wraps them in their own paragraph. Keeping the target inside the heading
+    makes in-message TOC links work in more clients.
+    """
+
+    def replace(match: re.Match) -> str:
+        anchor_id = match.group("anchor_id")
+        heading = match.group("heading")
+        return f"{heading}{_email_anchor_target(anchor_id)}"
+
+    html_content = _EMAIL_ANCHOR_PARAGRAPH_RE.sub(replace, html_content)
+    return _EMAIL_ANCHOR_INLINE_RE.sub(replace, html_content)
 
 
 class EmailManager:
@@ -202,7 +240,7 @@ class EmailManager:
 
         safe_summary_md = _prepare_markdown_for_email(summary_md)
         html_content = (
-            markdown.markdown(safe_summary_md)
+            _stabilize_email_anchors(markdown.markdown(safe_summary_md))
             if markdown
             else f"<pre>{html.escape(summary_md)}</pre>"
         )

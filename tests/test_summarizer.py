@@ -118,3 +118,43 @@ def test_generate_summary_uses_ai_category_before_source_category():
 
     assert "## 半导体" in result
     assert "财经 / 市场" not in result
+
+
+def test_generate_summary_supports_policy_and_local_categories():
+    summarizer = DailySummarizer()
+    policy_item = _make_item(1)
+    policy_item.metadata["category"] = "policy-interpretation"
+    shenzhen_item = _make_item(2)
+    shenzhen_item.metadata["category"] = "shenzhen-housing"
+    housing_item = _make_item(3)
+    housing_item.metadata["ai_category"] = "real_estate"
+
+    result = asyncio.run(
+        summarizer.generate_summary(
+            [policy_item, shenzhen_item, housing_item],
+            date="2026-04-25",
+            total_fetched=3,
+            language="en",
+        )
+    )
+
+    assert "## China Policy / Interpretation" in result
+    assert "## Shenzhen" in result
+    assert "## Housing / Real Estate" in result
+
+
+def test_generate_summary_maps_macro_livelihood_source_category():
+    summarizer = DailySummarizer()
+    item = _make_item(1)
+    item.metadata["category"] = "macro-livelihood"
+
+    result = asyncio.run(
+        summarizer.generate_summary(
+            [item],
+            date="2026-04-25",
+            total_fetched=1,
+            language="en",
+        )
+    )
+
+    assert "## Livelihood" in result
