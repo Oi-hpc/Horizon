@@ -71,3 +71,29 @@ def test_rss_skips_source_with_missing_env_var(monkeypatch) -> None:
 
     assert items == []
     client.get.assert_not_called()
+
+
+def test_rss_parses_date_only_pubdate() -> None:
+    feed = """<?xml version="1.0" encoding="UTF-8" ?>
+    <rss version="2.0"><channel><title>Test</title>
+      <item>
+        <guid>entry-1</guid>
+        <title>Item 1</title>
+        <link>https://example.com/item-1</link>
+        <pubDate>2026-05-22</pubDate>
+        <description>Hello</description>
+      </item>
+    </channel></rss>
+    """
+    response = MagicMock()
+    response.text = feed
+    response.raise_for_status.return_value = None
+    client = AsyncMock()
+    client.get.return_value = response
+    source = RSSSourceConfig(name="Test", url="https://example.com/feed.xml")
+    scraper = RSSScraper([source], client)
+    since = datetime(2026, 5, 22, 0, 0, tzinfo=timezone.utc)
+
+    item = asyncio.run(scraper.fetch(since))[0]
+
+    assert item.published_at == datetime(2026, 5, 22, 23, 59, 59, tzinfo=timezone.utc)

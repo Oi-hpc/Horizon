@@ -276,6 +276,18 @@ def build_config(
     filtering = FilteringConfig(
         ai_score_threshold=7.0,
         time_window_hours=24,
+        category_score_thresholds={
+            "ai": 7.5,
+            "semiconductors": 7.5,
+            "policy": 6.0,
+            "livelihood": 6.0,
+            "shenzhen": 6.0,
+            "real_estate": 6.0,
+        },
+        category_limits={
+            "ai": 12,
+            "semiconductors": 6,
+        },
     )
 
     return Config(

@@ -157,18 +157,44 @@ class RSSScraper(BaseScraper):
         for field in ["published", "updated", "created"]:
             if field in entry:
                 try:
-                    # Try parsing structured time first
+                    date_str = entry[field]
+                    parsed = self._parse_date_string(str(date_str))
+                    if parsed:
+                        return parsed
                     if f"{field}_parsed" in entry and entry[f"{field}_parsed"]:
                         return datetime.fromtimestamp(
                             calendar.timegm(entry[f"{field}_parsed"]), tz=timezone.utc
                         )
-                    # Fallback to string parsing
-                    date_str = entry[field]
-                    return parsedate_to_datetime(date_str)
                 except Exception:
                     continue
 
         return None
+
+    @staticmethod
+    def _parse_date_string(date_str: str) -> datetime | None:
+        date_str = date_str.strip()
+        try:
+            return parsedate_to_datetime(date_str)
+        except Exception:
+            pass
+
+        for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S"):
+            try:
+                parsed = datetime.strptime(date_str, fmt)
+                if fmt in ("%Y-%m-%d", "%Y/%m/%d"):
+                    parsed = parsed.replace(hour=23, minute=59, second=59)
+                return parsed.replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+
+        try:
+            parsed = datetime.fromisoformat(date_str)
+        except ValueError:
+            return None
+
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed
 
     def _extract_content(self, entry: dict) -> str:
         """Extract text content from feed entry.

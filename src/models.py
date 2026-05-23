@@ -314,6 +314,8 @@ class FilteringConfig(BaseModel):
 
     ai_score_threshold: float = 7.0
     time_window_hours: int = 24
+    category_score_thresholds: Dict[str, float] = Field(default_factory=dict)
+    category_limits: Dict[str, int] = Field(default_factory=dict)
 
 
 class Config(BaseModel):

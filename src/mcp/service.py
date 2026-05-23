@@ -204,6 +204,10 @@ class HorizonPipelineService:
             "filtering": {
                 "ai_score_threshold": ctx.config.filtering.ai_score_threshold,
                 "time_window_hours": ctx.config.filtering.time_window_hours,
+                "category_score_thresholds": getattr(
+                    ctx.config.filtering, "category_score_thresholds", {}
+                ),
+                "category_limits": getattr(ctx.config.filtering, "category_limits", {}),
             },
             "enabled_sources": get_enabled_sources(ctx.config),
             "selected_sources": selected_sources,

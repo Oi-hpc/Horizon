@@ -37,6 +37,8 @@ Score content on a 0-10 scale based on importance and relevance:
 - Insightful analysis or commentary
 - Valuable tools or libraries
 - Important China, global politics, macroeconomic, stock-market, or industry news with clear implications
+- AI items need clear capability, cost, infrastructure, safety, product, or ecosystem impact; routine wrappers, demos, repeated benchmark posts, and vague funding/partnership news are lower priority
+- Semiconductor items need clear technical, capacity, supply-chain, export-control, advanced-process, HBM/GPU/EDA/lithography, or industry-structure impact; pure stock-price or valuation commentary is lower priority
 - Meaningful policy interpretation from Chinese central ministries, official statistical interpretation, or local-government policy with practical impact
 - Housing and real-estate developments involving policy changes, mortgages, land auctions, housing supply, developer debt, property sales, urban renewal, or rental/affordable housing
 - Livelihood news involving employment, wages, consumption, education, healthcare, social security, pensions, public utilities, transportation, or cost of living
@@ -52,11 +54,15 @@ Score content on a 0-10 scale based on importance and relevance:
 - Minor updates
 - Common knowledge
 - Overly promotional content
+- Routine AI tool/plugin/tutorial/personal-project launches without clear adoption or technical novelty
+- Repeated model benchmark, prompt list, or quantization posts with limited new insight
+- Pure semiconductor stock-price, valuation, or short-term trading commentary without supply-chain or technology implications
 
 **0-2: Noise** - Not relevant or low quality
 - Spam or purely promotional
 - Off-topic content
 - Trivial updates
+- Generic AI listicles, SEO-style reposts, or thin launch pages without substantive information
 
 Consider:
 - Technical depth and novelty

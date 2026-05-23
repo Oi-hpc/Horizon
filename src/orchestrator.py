@@ -28,6 +28,131 @@ from .ai.classifier import ContentClassifier
 from .ai.tokens import get_usage_snapshot
 
 
+FILTER_CATEGORY_ALIASES = {
+    "world-news": "world",
+    "china-news": "china",
+    "china-geopolitics": "china",
+    "business-news": "finance",
+    "finance": "finance",
+    "markets": "finance",
+    "macro-livelihood": "livelihood",
+    "livelihood": "livelihood",
+    "government-policy": "policy",
+    "policy-interpretation": "policy",
+    "policy": "policy",
+    "real-estate": "real_estate",
+    "real_estate": "real_estate",
+    "housing": "real_estate",
+    "property": "real_estate",
+    "shenzhen": "shenzhen",
+    "shenzhen-policy": "shenzhen",
+    "shenzhen-housing": "shenzhen",
+    "semiconductors": "semiconductors",
+    "github-trending": "github",
+    "linux-kernel": "software",
+    "ai-tools": "ai",
+}
+
+FILTER_KEYWORD_CATEGORIES = [
+    (
+        "semiconductors",
+        (
+            "semiconductor",
+            "chip",
+            "foundry",
+            "wafer",
+            "hbm",
+            "gpu",
+            "tsmc",
+            "asml",
+            "lithography",
+            "eda",
+            "export control",
+            "半导体",
+            "芯片",
+            "晶圆",
+            "先进制程",
+            "光刻",
+            "封装",
+        ),
+    ),
+    (
+        "ai",
+        (
+            "ai",
+            "llm",
+            "model",
+            "inference",
+            "machine learning",
+            "openai",
+            "anthropic",
+            "deepseek",
+            "qwen",
+            "agent",
+            "人工智能",
+            "大模型",
+            "机器学习",
+            "推理",
+            "智能体",
+            "多模态",
+        ),
+    ),
+]
+
+
+def infer_filter_category(item: ContentItem) -> str:
+    """Infer a coarse category before the final AI classification pass."""
+    meta = item.metadata or {}
+    ai_category = str(meta.get("ai_category") or "").lower()
+    if ai_category:
+        return FILTER_CATEGORY_ALIASES.get(ai_category, ai_category)
+
+    source_category = str(meta.get("category") or "").lower()
+    source_category_alias = FILTER_CATEGORY_ALIASES.get(source_category)
+    if source_category_alias in {"ai", "semiconductors"}:
+        return source_category_alias
+
+    subreddit = str(meta.get("subreddit") or "").lower()
+    ai_subreddits = {
+        "machinelearning",
+        "localllama",
+        "stablediffusion",
+        "artificial",
+        "openai",
+        "chatgpt",
+        "chatgptcoding",
+    }
+    if subreddit in ai_subreddits:
+        return "ai"
+
+    feed_name = str(meta.get("feed_name") or "").lower()
+    tags = " ".join(str(tag).lower() for tag in (item.ai_tags or []))
+    haystack = " ".join(
+        [
+            item.title.lower(),
+            item.ai_summary.lower() if item.ai_summary else "",
+            item.source_type.value,
+            source_category,
+            subreddit,
+            feed_name,
+            tags,
+        ]
+    )
+    for category, keywords in FILTER_KEYWORD_CATEGORIES:
+        if any(keyword in haystack for keyword in keywords):
+            return category
+
+    if source_category_alias:
+        return source_category_alias
+
+    if item.source_type.value == "github":
+        return "github"
+
+    if item.source_type.value == "hackernews":
+        return "software"
+    return source_category or "other"
+
+
 class HorizonOrchestrator:
     """Orchestrates the complete workflow for content aggregation and analysis."""
 
@@ -91,16 +216,12 @@ class HorizonOrchestrator:
             analyzed_items = await self._analyze_content(merged_items)
             self.console.print(f"🤖 Analyzed {len(analyzed_items)} items with AI\n")
 
-            # 5. Filter by score threshold
-            threshold = self.config.filtering.ai_score_threshold
-            important_items = [
-                item for item in analyzed_items
-                if item.ai_score and item.ai_score >= threshold
-            ]
-            important_items.sort(key=lambda x: x.ai_score or 0, reverse=True)
+            # 5. Filter by score threshold, with optional per-category rules.
+            important_items = self._select_important_items(analyzed_items)
 
             self.console.print(
-                f"⭐️ {len(important_items)} items scored ≥ {threshold}\n"
+                f"Selected {len(important_items)} items after score filters "
+                f"({self._score_filter_summary()})\n"
             )
 
             # 5.5 Semantic deduplication: drop items covering the same topic
@@ -228,6 +349,56 @@ class HorizonOrchestrator:
             hours = self.config.filtering.time_window_hours
             since = datetime.now(timezone.utc) - timedelta(hours=hours)
         return since
+
+    def _select_important_items(self, analyzed_items: List[ContentItem]) -> List[ContentItem]:
+        default_threshold = self.config.filtering.ai_score_threshold
+        category_thresholds = (
+            getattr(self.config.filtering, "category_score_thresholds", {}) or {}
+        )
+        category_limits = getattr(self.config.filtering, "category_limits", {}) or {}
+
+        grouped_items: Dict[str, List[ContentItem]] = defaultdict(list)
+        for item in analyzed_items:
+            if item.ai_score is None:
+                continue
+
+            category = infer_filter_category(item)
+            threshold = category_thresholds.get(category, default_threshold)
+            if item.ai_score >= threshold:
+                grouped_items[category].append(item)
+
+        selected_items: List[ContentItem] = []
+        for category, items in grouped_items.items():
+            items.sort(key=lambda x: x.ai_score or 0, reverse=True)
+            limit = category_limits.get(category)
+            if limit and limit > 0:
+                items = items[:limit]
+            selected_items.extend(items)
+
+        selected_items.sort(key=lambda x: x.ai_score or 0, reverse=True)
+        return selected_items
+
+    def _score_filter_summary(self) -> str:
+        default_threshold = self.config.filtering.ai_score_threshold
+        category_thresholds = (
+            getattr(self.config.filtering, "category_score_thresholds", {}) or {}
+        )
+        category_limits = getattr(self.config.filtering, "category_limits", {}) or {}
+
+        parts = [f"default >= {default_threshold}"]
+        if category_thresholds:
+            overrides = ", ".join(
+                f"{category} >= {threshold}"
+                for category, threshold in sorted(category_thresholds.items())
+            )
+            parts.append(f"overrides: {overrides}")
+        if category_limits:
+            caps = ", ".join(
+                f"{category} <= {limit}"
+                for category, limit in sorted(category_limits.items())
+            )
+            parts.append(f"caps: {caps}")
+        return "; ".join(parts)
 
     async def fetch_all_sources(self, since: datetime) -> List[ContentItem]:
         """Fetch content from all configured sources.

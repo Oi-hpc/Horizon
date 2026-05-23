@@ -76,19 +76,19 @@
         "name": "量子位",
         "url": "https://wechat2rss.xlab.app/feed/7131b577c61365cb47e81000738c10d872685908.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "新智元",
         "url": "https://wechat2rss.xlab.app/feed/ede30346413ea70dbef5d485ea5cbb95cca446e7.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "BAIR Blog",
         "url": "https://bair.berkeley.edu/blog/feed.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Simon Willison",
@@ -100,49 +100,49 @@
         "name": "Latent Space",
         "url": "https://www.latent.space/feed",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Chip Huyen",
         "url": "https://huyenchip.com/feed.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Jay Alammar",
         "url": "https://jalammar.github.io/feed.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Ahead of AI (Sebastian Raschka)",
         "url": "https://magazine.sebastianraschka.com/feed",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Interconnects",
         "url": "https://www.interconnects.ai/feed",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Machine Learning Mastery",
         "url": "https://machinelearningmastery.com/feed/",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "OpenAI Blog",
         "url": "https://openai.com/blog/rss.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Sebastian Raschka",
         "url": "https://sebastianraschka.com/rss_feed.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "The Batch",
@@ -154,13 +154,13 @@
         "name": "The Gradient",
         "url": "https://thegradient.pub/rss/",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Stanford AI Lab (SAIL) Blog",
         "url": "https://ai.stanford.edu/blog/feed.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Ars Technica AI",
@@ -172,7 +172,7 @@
         "name": "AI Weekly",
         "url": "https://aiweekly.co/issues.rss",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "GitHub Changelog",
@@ -190,7 +190,7 @@
         "name": "AINews (Buttondown)",
         "url": "https://buttondown.com/ainews/rss",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "InfoQ 中文站",
@@ -202,7 +202,7 @@
         "name": "Last Week in AI",
         "url": "https://lastweekin.ai/feed",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "The Pragmatic Engineer",
@@ -214,7 +214,7 @@
         "name": "Lilian Weng",
         "url": "https://lilianweng.github.io/index.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "Lobsters",
@@ -226,7 +226,7 @@
         "name": "OpenAI News",
         "url": "https://openai.com/news/rss.xml",
         "enabled": true,
-        "category": ""
+        "category": "ai-tools"
       },
       {
         "name": "GitHub Trending - Daily",
@@ -279,6 +279,54 @@
       {
         "name": "South China Morning Post China",
         "url": "https://www.scmp.com/rss/91/feed",
+        "enabled": true,
+        "category": "china-news"
+      },
+      {
+        "name": "中国新闻网 - 时政",
+        "url": "https://www.chinanews.com.cn/rss/china.xml",
+        "enabled": true,
+        "category": "china-news"
+      },
+      {
+        "name": "中国新闻网 - 社会",
+        "url": "https://www.chinanews.com.cn/rss/society.xml",
+        "enabled": true,
+        "category": "livelihood"
+      },
+      {
+        "name": "中国新闻网 - 教育",
+        "url": "https://www.chinanews.com.cn/rss/edu.xml",
+        "enabled": true,
+        "category": "livelihood"
+      },
+      {
+        "name": "中国新闻网 - 财经",
+        "url": "https://www.chinanews.com.cn/rss/finance.xml",
+        "enabled": true,
+        "category": "finance"
+      },
+      {
+        "name": "澎湃新闻 - 首页头条",
+        "url": "https://rsshub.rssforever.com/thepaper/featured",
+        "enabled": true,
+        "category": "china-news"
+      },
+      {
+        "name": "第一财经 - 最新",
+        "url": "https://rsshub.rssforever.com/yicai/latest",
+        "enabled": true,
+        "category": "business-news"
+      },
+      {
+        "name": "界面新闻 - 快讯",
+        "url": "https://rsshub.rssforever.com/jiemian/lists/65",
+        "enabled": true,
+        "category": "business-news"
+      },
+      {
+        "name": "南方周末 - 新闻",
+        "url": "https://rsshub.rssforever.com/infzm/2",
         "enabled": true,
         "category": "china-news"
       },
@@ -347,6 +395,30 @@
         "url": "https://rsshub.rssforever.com/eastmoney/search/%E6%88%BF%E5%9C%B0%E4%BA%A7",
         "enabled": true,
         "category": "real-estate"
+      },
+      {
+        "name": "深圳政府在线 - 政务动态",
+        "url": "http://www.sz.gov.cn/cn/qt/gxhdz/rss_zwdt/index.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳政府在线 - 部门动态",
+        "url": "http://www.sz.gov.cn/cn/qt/gxhdz/rss_bmdt/index.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳政府在线 - 各区动态",
+        "url": "http://www.sz.gov.cn/cn/qt/gxhdz/rss_gqdt/index.xml",
+        "enabled": true,
+        "category": "shenzhen"
+      },
+      {
+        "name": "深圳政府在线 - 新闻发布",
+        "url": "http://www.sz.gov.cn/cn/qt/gxhdz/rss_xwfb/index.xml",
+        "enabled": true,
+        "category": "shenzhen"
       },
       {
         "name": "深圳发改委 - 工作动态",
@@ -499,7 +571,19 @@
   },
   "filtering": {
     "ai_score_threshold": 7.0,
-    "time_window_hours": 24
+    "time_window_hours": 24,
+    "category_score_thresholds": {
+      "ai": 7.5,
+      "semiconductors": 7.5,
+      "policy": 6.0,
+      "livelihood": 6.0,
+      "shenzhen": 6.0,
+      "real_estate": 6.0
+    },
+    "category_limits": {
+      "ai": 12,
+      "semiconductors": 6
+    }
   },
   "email": {
     "enabled": true,
