@@ -26,6 +26,7 @@ from .ai.summarizer import DailySummarizer
 from .ai.enricher import ContentEnricher
 from .ai.classifier import ContentClassifier
 from .ai.tokens import get_usage_snapshot
+from .time_utils import report_date, to_report_time
 
 
 FILTER_CATEGORY_ALIASES = {
@@ -194,7 +195,12 @@ class HorizonOrchestrator:
         try:
             # 1. Determine time window
             since = self._determine_time_window(force_hours)
-            self.console.print(f"📅 Fetching content since: {since.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            local_since = to_report_time(since)
+            self.console.print(
+                "Fetching content since: "
+                f"{since.strftime('%Y-%m-%d %H:%M:%S')} UTC "
+                f"({local_since.strftime('%Y-%m-%d %H:%M:%S')} Asia/Shanghai)\n"
+            )
 
             # 2. Fetch content from all sources
             all_items = await self.fetch_all_sources(since)
@@ -252,7 +258,7 @@ class HorizonOrchestrator:
             await self._classify_important_items(important_items)
 
             # 8. Generate and save daily summaries for each configured language
-            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            today = report_date()
             for lang in self.config.ai.languages:
                 summarizer = DailySummarizer()
                 summary = await summarizer.generate_summary(important_items, today, len(all_items), language=lang)
@@ -336,7 +342,7 @@ class HorizonOrchestrator:
             # Send webhook failure notification if configured
             if self.webhook_notifier:
                 await self.webhook_notifier.send_failure(
-                    date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                    date=report_date(),
                     error_message=str(e),
                 )
 

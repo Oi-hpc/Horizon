@@ -4,6 +4,7 @@ import re
 from typing import List, Dict, Tuple
 
 from ..models import ContentItem
+from ..time_utils import to_report_time
 
 
 _CJK = r"[\u4e00-\u9fff\u3400-\u4dbf]"
@@ -258,8 +259,9 @@ class DailySummarizer:
         else:
             source_parts.append(item.author or "unknown")
         if item.published_at:
-            day = item.published_at.strftime("%d").lstrip("0")
-            source_parts.append(item.published_at.strftime(f"%b {day}, %H:%M"))
+            published_at = to_report_time(item.published_at)
+            day = published_at.strftime("%d").lstrip("0")
+            source_parts.append(published_at.strftime(f"%b {day}, %H:%M"))
         source_line = " \u00b7 ".join(source_parts)  # ·
 
         discussion_url = meta.get("discussion_url")

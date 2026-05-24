@@ -94,3 +94,29 @@ def test_analyze_batch_concurrent_preserves_order(monkeypatch):
     result = asyncio.run(analyzer.analyze_batch(items))
 
     assert [item.id for item in result] == [item.id for item in items]
+
+
+def test_analyze_item_uses_configured_analysis_language():
+    captured = {}
+
+    class FakeClient:
+        config = SimpleNamespace(languages=["zh"])
+
+        async def complete(self, system, user):
+            captured["user"] = user
+            return '{"score": 8, "reason": "重要", "summary": "中文摘要。", "tags": ["AI", "大模型"]}'
+
+    analyzer = ContentAnalyzer(FakeClient())
+    item = _make_item("rss:test:zh")
+
+    asyncio.run(analyzer._analyze_item(item))
+
+    assert "Output language for all text values" in captured["user"]
+    assert "Simplified Chinese" in captured["user"]
+    assert item.ai_summary == "中文摘要。"
+
+
+def test_language_instruction_defaults_to_english_without_config():
+    analyzer = ContentAnalyzer(SimpleNamespace())
+
+    assert analyzer._language_instruction() == "English"

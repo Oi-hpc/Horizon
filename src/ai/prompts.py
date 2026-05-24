@@ -79,6 +79,9 @@ CONTENT_ANALYSIS_USER = """Analyze the following content and provide a JSON resp
 - summary: One-sentence summary of the content
 - tags: Relevant topic tags (3-5 tags)
 
+Output language for all text values (reason, summary, tags): {language_instruction}
+Keep JSON keys exactly as shown below. Technical abbreviations, product names, project names, and proper nouns may stay in their original form.
+
 Content:
 Title: {title}
 Source: {source}

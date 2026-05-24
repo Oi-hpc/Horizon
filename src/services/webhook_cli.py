@@ -14,6 +14,7 @@ from rich.panel import Panel
 from ..ai.summarizer import DailySummarizer
 from ..models import ContentItem, SourceType
 from ..storage.manager import ConfigError, StorageManager
+from ..time_utils import report_date
 from .webhook import WebhookNotifier
 
 console = Console()
@@ -88,7 +89,7 @@ async def _run_test(
     webhook_config, lang: str, dry_run: bool, delivery_override: str | None = None
 ) -> None:
     """Execute the webhook test."""
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = report_date()
     items = _make_test_items()
     summarizer = DailySummarizer()
     summary = await summarizer.generate_summary(items, today, len(items), language=lang)

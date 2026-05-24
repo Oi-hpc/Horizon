@@ -68,7 +68,7 @@ def test_generate_webhook_item_includes_discussion_link_when_distinct():
         total=1,
     )
 
-    assert "tester · Apr 25, 08:00 · [Discussion](https://news.ycombinator.com/item?id=1)" in result
+    assert "tester · Apr 25, 16:00 · [Discussion](https://news.ycombinator.com/item?id=1)" in result
 
 
 def test_generate_webhook_item_omits_discussion_link_when_same_as_item_url():
