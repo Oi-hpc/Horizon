@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from enum import Enum
+import re
 from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel, HttpUrl, Field, field_validator
 
@@ -309,6 +310,34 @@ class EmailConfig(BaseModel):
     enabled: bool = False
 
 
+class ExportConfig(BaseModel):
+    """Structured export configuration for downstream workflows."""
+
+    enabled: bool = True
+    profile: str = "selected-news"
+    workflow: str = "selected_news"
+
+    @field_validator("profile")
+    @classmethod
+    def validate_profile(cls, v: str) -> str:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", v):
+            raise ValueError(
+                "exports.profile must be 1-64 characters of letters, numbers, "
+                "hyphens, or underscores, and start with a letter or number"
+            )
+        return v
+
+    @field_validator("workflow")
+    @classmethod
+    def validate_workflow(cls, v: str) -> str:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", v):
+            raise ValueError(
+                "exports.workflow must be 1-64 characters of letters, numbers, "
+                "hyphens, or underscores, and start with a letter or number"
+            )
+        return v
+
+
 class FilteringConfig(BaseModel):
     """Content filtering configuration."""
 
@@ -327,3 +356,4 @@ class Config(BaseModel):
     filtering: FilteringConfig
     email: Optional[EmailConfig] = None
     webhook: Optional[WebhookConfig] = None
+    exports: ExportConfig = Field(default_factory=ExportConfig)

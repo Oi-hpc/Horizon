@@ -39,6 +39,7 @@ ENV/
 # Data files (keep structure, ignore content)
 data/seen.json
 data/summaries/*.md
+data/exports/*.json
 data/subscribers.json
 data/mcp.secrets.json
 data/mcp-secrets.json
@@ -60,3 +61,4 @@ logs/*.log
 todo.txt
 .ruff_cache
 .pytest_cache
+.pytest_*

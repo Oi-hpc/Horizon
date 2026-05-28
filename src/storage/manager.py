@@ -53,13 +53,15 @@ class ConfigError(ValueError):
 class StorageManager:
     """Manages file-based storage for configuration and state."""
 
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = "data", config_path: str | Path | None = None):
         self.data_dir = Path(data_dir)
-        self.config_path = self.data_dir / "config.json"
+        self.config_path = Path(config_path) if config_path else self.data_dir / "config.json"
         self.summaries_dir = self.data_dir / "summaries"
+        self.exports_dir = self.data_dir / "exports"
 
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.summaries_dir.mkdir(parents=True, exist_ok=True)
+        self.exports_dir.mkdir(parents=True, exist_ok=True)
 
     def load_config(self) -> Config:
         if not self.config_path.exists():
@@ -116,6 +118,18 @@ class StorageManager:
             f.write(markdown)
 
         return filepath
+
+    def save_news_export(self, date: str, payload: dict[str, Any], profile: str) -> tuple[Path, Path]:
+        """Save a structured news export under a dated file and a latest pointer."""
+        dated_path = self.exports_dir / f"{profile}-{date}.json"
+        latest_path = self.exports_dir / f"{profile}-latest.json"
+
+        for path in (dated_path, latest_path):
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2, ensure_ascii=False)
+                f.write("\n")
+
+        return dated_path, latest_path
 
     def load_subscribers(self) -> list:
         """Loads the list of email subscribers."""

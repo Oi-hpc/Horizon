@@ -113,6 +113,11 @@
     "ai_score_threshold": 6.0,
     "time_window_hours": 24
   },
+  "exports": {
+    "enabled": true,
+    "profile": "selected-news",
+    "workflow": "selected_news"
+  },
   "webhook": {
     "enabled": false,
     "url_env": "HORIZON_WEBHOOK_URL",

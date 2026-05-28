@@ -37,17 +37,26 @@ def main():
 
     parser = argparse.ArgumentParser(description="Horizon - AI-Driven Information Aggregation System")
     parser.add_argument("--hours", type=int, help="Force fetch from last N hours")
+    parser.add_argument(
+        "--config",
+        default="data/config.json",
+        help="Path to config JSON (default: data/config.json)",
+    )
     args = parser.parse_args()
 
     try:
         # Load environment variables from .env file
         load_dotenv()
 
-        # Ensure we're in the project directory or use data/ in current dir
-        data_dir = Path("data")
+        config_path = Path(args.config).expanduser()
+        if not config_path.is_absolute():
+            config_path = Path.cwd() / config_path
 
         # Initialize storage manager
-        storage = StorageManager(data_dir=str(data_dir))
+        storage = StorageManager(
+            data_dir=str(config_path.parent),
+            config_path=config_path,
+        )
 
         # Load configuration
         try:
@@ -55,8 +64,8 @@ def main():
         except FileNotFoundError:
             console.print("[bold red]❌ Configuration file not found![/bold red]\n")
             console.print(
-                "Run [bold cyan]uv run horizon-wizard[/bold cyan] to launch the interactive setup wizard,\n"
-                "or create [cyan]data/config.json[/cyan] manually based on the template:\n"
+                f"Create [cyan]{config_path}[/cyan] manually based on the template,\n"
+                "or run [bold cyan]uv run horizon-wizard[/bold cyan] for the default config:\n"
             )
             print_config_template()
             sys.exit(1)
@@ -130,6 +139,11 @@ def print_config_template():
       "ai": 12,
       "semiconductors": 6
     }
+  },
+  "exports": {
+    "enabled": true,
+    "profile": "selected-news",
+    "workflow": "selected_news"
   }
 }
 

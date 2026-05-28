@@ -26,6 +26,7 @@ from .ai.summarizer import DailySummarizer
 from .ai.enricher import ContentEnricher
 from .ai.classifier import ContentClassifier
 from .ai.tokens import get_usage_snapshot
+from .exporter import build_news_export
 from .time_utils import report_date, to_report_time
 
 
@@ -195,6 +196,7 @@ class HorizonOrchestrator:
         try:
             # 1. Determine time window
             since = self._determine_time_window(force_hours)
+            fetch_window_hours = force_hours or self.config.filtering.time_window_hours
             local_since = to_report_time(since)
             self.console.print(
                 "Fetching content since: "
@@ -257,8 +259,17 @@ class HorizonOrchestrator:
             # 7. Classify selected items into briefing sections
             await self._classify_important_items(important_items)
 
-            # 8. Generate and save daily summaries for each configured language
+            # 8. Export selected items as structured JSON for downstream workflows
             today = report_date()
+            self._export_structured_items(
+                important_items=important_items,
+                date=today,
+                total_fetched=len(all_items),
+                total_analyzed=len(analyzed_items),
+                fetch_window_hours=fetch_window_hours,
+            )
+
+            # 9. Generate and save daily summaries for each configured language
             for lang in self.config.ai.languages:
                 summarizer = DailySummarizer()
                 summary = await summarizer.generate_summary(important_items, today, len(all_items), language=lang)
@@ -405,6 +416,45 @@ class HorizonOrchestrator:
             )
             parts.append(f"caps: {caps}")
         return "; ".join(parts)
+
+    def _export_structured_items(
+        self,
+        *,
+        important_items: List[ContentItem],
+        date: str,
+        total_fetched: int,
+        total_analyzed: int,
+        fetch_window_hours: int,
+    ) -> None:
+        exports_config = getattr(self.config, "exports", None)
+        if not exports_config or not exports_config.enabled:
+            return
+
+        try:
+            payload = build_news_export(
+                items=important_items,
+                date=date,
+                total_fetched=total_fetched,
+                total_analyzed=total_analyzed,
+                fetch_window_hours=fetch_window_hours,
+                languages=self.config.ai.languages,
+                profile=exports_config.profile,
+                workflow=exports_config.workflow,
+                category_resolver=infer_filter_category,
+            )
+            dated_path, latest_path = self.storage.save_news_export(
+                date=date,
+                payload=payload,
+                profile=exports_config.profile,
+            )
+            self.console.print(
+                f"💾 Exported structured news JSON to: {dated_path} "
+                f"(latest: {latest_path})\n"
+            )
+        except Exception as exc:
+            self.console.print(
+                f"[yellow]⚠️  Failed to export structured news JSON: {exc}[/yellow]\n"
+            )
 
     async def fetch_all_sources(self, since: datetime) -> List[ContentItem]:
         """Fetch content from all configured sources.
